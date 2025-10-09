@@ -28,8 +28,8 @@
                         {% endfor %}
                     </select>
                     <br>
-                    <label for="comuna" required>Comuna:</label>
-                    <select id="comuna" name="comuna">
+                    <label for="comuna" >Comuna:</label>
+                    <select id="comuna" name="comuna" required>
                         <option value="">Seleccione una comuna</option>
                         {% for comuna in comunas %}
                             <option value="{{ comuna.id }}" data-region="{{ comuna.region_id }}">{{ comuna.nombre }}</option>
