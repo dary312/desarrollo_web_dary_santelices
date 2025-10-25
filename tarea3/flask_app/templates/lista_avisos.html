@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Listado de avisos</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/lista_avisos.css') }}">
+
+    </head>
+    <body>
+        <h1>Listado de avisos</h1>
+
+        <div id="listado">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha publicación</th>
+                        <th>Fecha entrega</th>
+                        <th>Comuna</th>
+                        <th>Sector</th>
+                        <th>Cantidad tipo edad</th>
+                        <th>Nombre contacto</th>
+                        <th>Total Fotos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla_avisos">
+                    {% for aviso in avisos %}
+                    <tr class="fila-aviso" data-aviso-id="{{ aviso.id }}">
+                        <td>{{ aviso.fecha_ingreso.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ aviso.fecha_entrega.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ aviso.comuna.nombre }}</td>
+                        <td>{{ aviso.sector if aviso.sector else 'No especificado' }}</td>
+                        <td>
+                            {{ aviso.cantidad }} {{ aviso.tipo.value }}{% if aviso.cantidad > 1 %}s{% endif %}, 
+                            {{ aviso.edad }} {{ aviso.unidad_medida.value }}
+                        </td>
+                        <td>{{ aviso.nombre }}</td>
+                        <td>{{ aviso.fotos|length }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; font-size: 1.2rem;">No hay avisos para mostrar.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="paginacion" class="paginacion">
+            {% if pagina_actual > 1 %}
+                <a href="{{ url_for('lista_avisos', pagina=pagina_actual-1) }}" class="btn-pagina">‹ Anterior</a>
+            {% endif %}
+            
+            <span class="info-pagina">Página {{ pagina_actual }} de {{ total_paginas }}</span>
+            
+            {% if pagina_actual < total_paginas %}
+                <a href="{{ url_for('lista_avisos', pagina=pagina_actual+1) }}" class="btn-pagina">Siguiente ›</a>
+            {% endif %}
+        </div>
+
+        <div id="detalle" style="display:none;">
+            <h2>Detalle del aviso</h2>
+            <p><strong>Fecha de publicación:</strong> <span id="detalle_fecha_publicacion"></span></p>
+            <p><strong>Región:</strong> <span id="detalle_region"></span></p>
+            <p><strong>Comuna:</strong> <span id="detalle_comuna"></span></p>
+            <p><strong>Sector:</strong> <span id="detalle_sector"></span></p>
+            <p><strong>Nombre contacto:</strong> <span id="detalle_nombre"></span></p>
+            <p><strong>Email:</strong> <span id="detalle_email"></span></p>
+            <p><strong>Teléfono:</strong> <span id="detalle_telefono"></span></p>
+            <p><strong>Medios de contacto:</strong> <span id="detalle_contacto"></span></p>
+            <p><strong>Animales:</strong> <span id="detalle_animales"></span></p>
+            <p><strong>Fecha entrega:</strong> <span id="detalle_fecha"></span></p>
+            <p><strong>Descripción:</strong> <span id="detalle_descripcion"></span></p>
+
+            <div id="detalle_fotos"></div>
+            <br>
+            <hr>
+            <section id="comentarios" aria-labelledby="titulo_comentarios">
+            <h3 id="titulo_comentarios">Comentarios</h3>
+
+            <div id="comentarios_list" class="comentarios_list">
+                <p class="muted">Aún no hay comentarios.</p>
+            </div>
+
+            <form id="form_comentario" novalidate>
+                <input type="hidden" id="comentario_aviso_id" name="aviso_id" value="">
+
+                <div>
+                <label for="c_nombre">Nombre:</label>
+                <input id="c_nombre" name="nombre" type="text" minlength="3" maxlength="80" required placeholder="Tu nombre">
+                <br>
+
+                <label for="c_texto">Comentario:</label><br>
+                <textarea id="c_texto" name="texto" cols="50" rows="4" minlength="5" maxlength="200" placeholder="Escribe tu comentario…" required></textarea>
+                <br>
+                </div>
+
+                <button type="submit" id="btn_enviar_comentario">Agregar comentario</button>
+                <p id="form_comentario_error" class="alert alert-danger" style="display:none;"></p>
+            </form>
+            </section>
+            <button onclick="mostrarListado()">Volver al listado</button>
+        </div>
+
+        <button id="portada_button" class="portada_button">Volver a la portada</button>
+
+        <script>
+            const avisosData = {
+                {% for aviso in avisos %}
+                {{ aviso.id }}: {
+                    fecha_publicacion: "{{ aviso.fecha_ingreso.strftime('%Y-%m-%d %H:%M') }}",
+                    region: "{{ aviso.comuna.nombre }}",
+                    comuna: "{{ aviso.comuna.nombre }}",
+                    sector: "{{ aviso.sector if aviso.sector else 'No especificado' }}",
+                    nombre: "{{ aviso.nombre }}",
+                    email: "{{ aviso.email }}",
+                    telefono: "{{ aviso.celular if aviso.celular else 'No especificado' }}",
+                    contacto: "{% for contacto in aviso.contactos %}{{ contacto.nombre.value }}: {{ contacto.identificador }}{% if not loop.last %}, {% endif %}{% endfor %}",
+                    tipo: "{{ aviso.tipo.value }}",
+                    cantidad: {{ aviso.cantidad }},
+                    edad: {{ aviso.edad }},
+                    medida: "{{ aviso.unidad_medida.value }}",
+                    fecha_entrega: "{{ aviso.fecha_entrega.strftime('%Y-%m-%d %H:%M') }}",
+                    descripcion: "{{ aviso.descripcion if aviso.descripcion else 'Sin descripción' }}",
+                    fotos: [
+                        {% for foto in aviso.fotos %}
+                        "{{ url_for('static', filename='uploads/' + foto.nombre_archivo) }}"{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            };
+
+            document.addEventListener("DOMContentLoaded", function() {
+                document.querySelectorAll('.fila-aviso').forEach(fila => {
+                    fila.addEventListener('click', function() {
+                        const avisoId = this.getAttribute('data-aviso-id');
+                        mostrarDetalle(avisoId);
+                    });
+                });
+
+                document.getElementById("portada_button").addEventListener("click", function() {
+                    window.location.href = "{{ url_for('portada') }}";
+                });
+            });
+
+            const ampliarFoto = (src) => {
+                const modal = document.createElement("div");
+                modal.style.position = "fixed";
+                modal.style.top = "0";
+                modal.style.left = "0";
+                modal.style.width = "100%";
+                modal.style.height = "100%";
+                modal.style.backgroundColor = "rgba(0,0,0,0.8)";
+                modal.style.display = "flex";
+                modal.style.justifyContent = "center";
+                modal.style.alignItems = "center";
+                modal.style.zIndex = "1000";
+                modal.style.cursor = "pointer";
+
+                const img = document.createElement("img");
+                img.src = src;
+                img.style.maxWidth = "90%";
+                img.style.maxHeight = "90%";
+                img.style.objectFit = "contain";
+                img.style.borderRadius = "12px";
+                img.style.boxShadow = "0 4px 20px rgba(0,0,0,0.5)";
+
+                modal.addEventListener("click", () => {
+                    document.body.removeChild(modal);
+                });
+
+                modal.appendChild(img);
+                document.body.appendChild(modal);
+            };
+
+            const mostrarDetalle = (avisoId) => {
+                const av = avisosData[avisoId];
+                document.getElementById("detalle_fecha_publicacion").textContent = av.fecha_publicacion;
+                document.getElementById("detalle_region").textContent = av.region;
+                document.getElementById("detalle_comuna").textContent = av.comuna;
+                document.getElementById("detalle_sector").textContent = av.sector;
+                document.getElementById("detalle_nombre").textContent = av.nombre;
+                document.getElementById("detalle_email").textContent = av.email;
+                document.getElementById("detalle_telefono").textContent = av.telefono;
+                document.getElementById("detalle_contacto").textContent = av.contacto;
+                document.getElementById("detalle_animales").textContent = `${av.cantidad} ${av.tipo}, ${av.edad} ${av.medida}`;
+                document.getElementById("detalle_fecha").textContent = av.fecha_entrega;
+                document.getElementById("detalle_descripcion").textContent = av.descripcion;
+
+                const fotosDiv = document.getElementById("detalle_fotos");
+                fotosDiv.innerHTML = "<h3>Fotos:</h3>";
+                av.fotos.forEach(foto => {
+                    const img = document.createElement("img");
+                    img.src = foto;
+                    img.width = 320;
+                    img.height = 240;
+                    img.style.cursor = "pointer";
+                    img.style.margin = "10px";
+                    img.style.borderRadius = "8px";
+                    img.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+                    img.style.border = "2px solid #0096c7";
+                    img.addEventListener("click", () => ampliarFoto(foto));
+                    fotosDiv.appendChild(img);
+                });
+
+                document.getElementById("listado").style.display = "none";
+                document.getElementById("paginacion").style.display = "none";
+                document.getElementById("detalle").style.display = "block";
+                document.getElementById("portada_button").style.display = "none";
+                const hiddenComentarioAvisoId = document.getElementById("comentario_aviso_id");
+                if (hiddenComentarioAvisoId) {
+                    hiddenComentarioAvisoId.value = avisoId; 
+                }
+                if (typeof cargarComentariosParaAviso === "function") {
+                    cargarComentariosParaAviso(avisoId);
+                }
+            }
+
+            const mostrarListado = () => {
+                document.getElementById("detalle").style.display = "none";
+                document.getElementById("listado").style.display = "block";
+                document.getElementById("paginacion").style.display = "block";
+                document.getElementById("portada_button").style.display = "block";
+            }
+        </script>
+        <script src="{{ url_for('static', filename='js/agregar_comentario.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/lista_comentarios.js') }}"></script>
+    </body>
+</html>

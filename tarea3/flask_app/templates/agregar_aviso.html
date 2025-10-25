@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Mensaje pestaña</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/agregar_aviso.css') }}">
+    </head>
+    <body>
+        {% if errores %}
+        <div class="alert alert-danger">
+            <ul>
+            {% for error in errores %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <h1>Agrega tu aviso:</h1>
+        <div>
+            <form method="POST" enctype="multipart/form-data" id="formulario-aviso">
+                <h2>¿Dónde?:</h2>
+                <div>
+                    <label for="region">Region:</label>
+                    <select id="region" name="region" required>
+                        <option value="">Seleccione una region</option>
+                        {% for region in regiones %}
+                            <option value="{{ region.id }}">{{ region.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="comuna" >Comuna:</label>
+                    <select id="comuna" name="comuna" required>
+                        <option value="">Seleccione una comuna</option>
+                        {% for comuna in comunas %}
+                            <option value="{{ comuna.id }}" data-region="{{ comuna.region_id }}">{{ comuna.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label>Sector</label>
+                    <input id="sector" name="sector" type="text">
+                </div>
+                <h2>¿Contacto de esta publicación?:</h2>
+                <div>
+                    <label for="nombre">Nombre:</label>
+                    <input id="nombre" name="nombre" type="text" minlength="3" maxlength="200" required>
+                    <br>
+                    <label for="email">Email:</label>
+                    <input id="email" name="email" type="email" maxlength="100" required>
+                    <br>
+                    <label for="celular">Celular:</label>
+                    <input id="celular" name="celular" type="tel" pattern="^\+\d{3}\.\d{8}$" placeholder="Formato: +NNN.NNNNNNNN">
+                    <br> 
+                    <div id="contactos">
+                        {% for i in range(max_redes) %}
+                            <label for="red_social_{{ i+1 }}" {% if i != 0 %}style="display:none"{% endif %}>
+                            {% if i == 0 %}Contactar por:{% else %}Otro medio de contacto:{% endif %}
+                            </label>
+                            <select id="red_social_{{ i+1 }}" name="red_social_{{ i+1 }}" {% if i != 0 %}style="display:none"{% endif %}>
+                            <option value="">Seleccione una red social</option>
+                            {% for red in redes_sociales %}
+                                <option value="{{ red.id }}">{{ red.nombre }}</option>
+                            {% endfor %}
+                            </select>
+                            <input id="red_social_input_{{ i+1 }}" name="red_social_input_{{ i+1 }}" type="text" style="display:none" minlength="4" maxlength="50">
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <h2>¿Qué mascota ofrece en adopción?:</h2>
+                <div>
+                    <label>Tipo:</label>
+                    <div>
+                        <input type="radio" id="perro" name="tipo" value="perro">
+                        <label for="perro" class="radio_button">Perro</label>
+                        <br>
+                        <input type="radio" id="gato" name="tipo" value="gato">
+                        <label for="gato" class="radio_button">Gato</label>
+                    </div>
+                    <br>
+                    <label for="cantidad">Cantidad:</label>
+                    <input id="cantidad" name="cantidad" type="number" min="1" required>
+                    <br>
+                    <label for="edad">Edad:</label>
+                    <input id="edad" name="edad" type="number" min="1" required>
+                    <br>
+                    <label>Unidad medidad edad:</label>
+                    <div>
+                        <input type="radio" id="meses" name="unidad" value="m">
+                        <label for="meses" class="radio_button">Meses</label>
+                        <br>
+                        <input type="radio" id="años" name="unidad" value="a">
+                        <label for="años" class="radio_button">Años</label>
+                    </div>
+                    <br>
+                    <label for="fecha_entrega">Fecha disponible para entrega:</label>
+                    <input id="fecha_entrega" name="fecha_entrega" type="datetime-local" value="{{ fecha_default }}" min="{{ fecha_default }}" required>
+                    <input id="fecha_entrega_default" type="hidden" name="fecha_minima" value="{{ fecha_default }}">
+                    <br>
+                    <label>Descripción:</label><br>
+                    <textarea name="descripcion" cols="50" rows="10" placeholder="Agrega una descripcion..."></textarea>        
+                    <br>
+                    <label>Foto(s):</label>
+                    <div id="contenedor_fotos">
+                        {% for i in range(max_fotos) %}
+                            <div class="foto-input" {% if i != 0 %}style="display: none;"{% endif %}>
+                                <input type="file" name="foto" accept="image/*" id="foto_{{ i }}" {% if i == 0 %} {% endif %}>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="agregar_foto">Agregar otra foto</button>
+                </div>
+                <button type="button" id="agregar_aviso"> Agregar este aviso de adopción</button>
+            </form>
+            <button id="portada_button" class="portada_button">Volver a la portada</button>          
+        </div>
+
+        <!-- Modal de confirmación -->
+        <div id="modalConfirmacion" class="modal-confirmacion">
+            <div class="modal-contenido">
+                <h3>Confirmar envío</h3>
+                <p>¿Estás seguro que quieres ingresar el aviso?</p>
+                <div class="botones-modal">
+                    <button id="btnSi" class="btn-si">Sí</button>
+                    <button id="btnNo" class="btn-no">No</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("region").addEventListener("change", function() {
+                const regionId = this.value;
+                const comunaSelect = document.getElementById("comuna");
+
+                comunaSelect.value = "";
+
+                const comunas = document.querySelectorAll("#comuna option");
+                comunas.forEach(c => {
+                    if(c.value === "") {
+                        c.style.display = "block"; 
+                    } else {
+                        if (c.dataset.region == regionId) {
+                            c.style.display = "block";
+                        } else {
+                            c.style.display = "none";
+                        }
+                    }
+                });
+            });
+        </script>
+        <script>
+            const maximoFotos = {{ max_fotos }};
+            let contadorFotos = 1;
+
+            const contenedorFotos = document.getElementById("contenedor_fotos");
+            const botonAgregar = document.getElementById("agregar_foto");
+
+            botonAgregar.addEventListener("click", () => {
+                if (contadorFotos >= maximoFotos) return;
+
+                const fotoDivs = contenedorFotos.querySelectorAll(".foto-input");
+                fotoDivs[contadorFotos].style.display = "block";
+
+                contadorFotos++;
+
+                if (contadorFotos === maximoFotos) {
+                    botonAgregar.remove();
+                }
+            });
+        </script>
+        <script>
+            const maxRedes = {{ max_redes }};
+            
+            const changeRedSocial = () => {
+                for (let i = 1; i <= maxRedes; i++) {
+                const select = document.getElementById(`red_social_${i}`);
+                const input = document.getElementById(`red_social_input_${i}`);
+                const label = document.querySelector(`label[for='red_social_${i}']`);
+
+                if (select.value !== "") {
+                    input.style.display = "inline-block";
+                    if (i < maxRedes) {
+                    document.getElementById(`red_social_${i+1}`).style.display = "inline-block";
+                    document.querySelector(`label[for='red_social_${i+1}']`).style.display = "inline";
+                    }
+                } else {
+                    input.style.display = "none";
+                    if (i < maxRedes) {
+                    document.getElementById(`red_social_${i+1}`).style.display = "none";
+                    document.getElementById(`red_social_input_${i+1}`).style.display = "none";
+                    document.querySelector(`label[for='red_social_${i+1}']`).style.display = "none";
+                    }
+                }
+                }
+            };
+
+            window.onload = () => {
+                for (let i = 1; i <= maxRedes; i++) {
+                document.getElementById(`red_social_${i}`).addEventListener("change", changeRedSocial);
+                }
+            };
+        </script>
+        <script src="{{ url_for('static', filename='js/validador.js') }}"></script>
+        <script>
+            const urlPortada = "{{ url_for('portada') }}";
+
+            document.getElementById('portada_button').addEventListener('click', function() {
+                window.location.href = urlPortada;
+            });
+
+            // Funcionalidad del modal de confirmación
+            document.addEventListener('DOMContentLoaded', function() {
+                const botonAgregarAviso = document.getElementById('agregar_aviso');
+                const modalConfirmacion = document.getElementById('modalConfirmacion');
+                const btnSi = document.getElementById('btnSi');
+                const btnNo = document.getElementById('btnNo');
+                const formulario = document.getElementById('formulario-aviso');
+
+                // Mostrar modal al hacer clic en "Agregar aviso"
+                botonAgregarAviso.addEventListener('click', function() {
+                    // Primero validar el formulario
+                    if (formulario.checkValidity()) {
+                        modalConfirmacion.style.display = 'flex';
+                    } else {
+                        // Si el formulario no es válido, mostrar validación nativa
+                        formulario.reportValidity();
+                    }
+                });
+
+                // Botón Sí - enviar formulario
+                btnSi.addEventListener('click', function() {
+                    modalConfirmacion.style.display = 'none';
+                    
+                    // Mostrar alerta de éxito
+                    alert('Aviso agregado con éxito!');
+                    
+                    // Enviar el formulario
+                    formulario.submit();
+                });
+
+                // Botón No - cerrar modal
+                btnNo.addEventListener('click', function() {
+                    modalConfirmacion.style.display = 'none';
+                    // Mantenerse en la página (no hacer nada)
+                });
+
+                // Cerrar modal haciendo clic fuera del contenido
+                modalConfirmacion.addEventListener('click', function(e) {
+                    if (e.target === modalConfirmacion) {
+                        modalConfirmacion.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
