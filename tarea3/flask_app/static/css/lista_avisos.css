@@ -1,0 +1,374 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+h1 {
+    background-color: #0077b6;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+h2 {
+    margin: 20px 0 10px;
+    color: #023e8a;
+    font-size: 1.3rem;
+}
+
+/* Listado */
+#listado {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin: 25px 0;
+}
+
+/* Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 2px solid #0096c7;
+    font-size: 1.1rem;
+}
+
+thead {
+    background-color: #0096c7;
+    color: white;
+}
+
+tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+th, td {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+th {
+    color: white;
+    border-bottom: 2px solid #0077b6;
+    font-size: 1.2rem;
+    padding: 18px;
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+.fila-aviso {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.fila-aviso:hover {
+    background-color: #e3f2fd;
+}
+
+.paginacion {
+    margin: 30px 0;
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-pagina {
+    display: inline-block;
+    padding: 12px 25px;
+    margin: 0 20px;
+    background-color: #0096c7;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.3s, transform 0.15s ease-in-out;
+    font-weight: bold;
+}
+
+.btn-pagina:hover {
+    background-color: #0077b6;
+    transform: translateY(-2px);
+}
+
+.info-pagina {
+    display: inline-block;
+    margin: 0 25px;
+    font-weight: bold;
+    color: #023e8a;
+    font-size: 1.2rem;
+}
+
+/* Detalle */
+#detalle {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-top: 25px;
+}
+
+#detalle p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+#detalle_fotos img {
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 2px solid #0096c7;
+}
+
+/* Botones generales */
+button {
+    background-color: #0096c7;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 8px 5px 0 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s, transform 0.15s ease-in-out;
+}
+
+button:hover {
+    background-color: #0077b6;
+    transform: translateY(-1px);
+}
+
+button:disabled,
+button[disabled] {
+    background-color: #a8cde1;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button.portada_button,
+#portada_button.portada_button {
+    background-color: #6c757d;
+}
+
+button.portada_button:hover,
+#portada_button.portada_button:hover {
+    background-color: #495057;
+}
+
+
+#comentarios {
+    margin-top: 25px;
+    padding-top: 10px;
+}
+
+#titulo_comentarios {
+    color: #023e8a;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+.comentarios_list {
+    background: #ffffff;
+    border: 1px solid #e3eef5;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.comentarios_list .muted {
+    color: #6c757d;
+    padding: 14px 10px;
+    text-align: center;
+}
+
+.comentario-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "avatar header"
+        "avatar body";
+    gap: 8px 12px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #e6f2f8;
+    background: #fdfefe;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s ease, transform 0.06s ease;
+}
+
+.comentario-item + .comentario-item {
+    margin-top: 10px;
+}
+
+.comentario-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+}
+
+.comentario-avatar {
+    grid-area: avatar;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0096c7, #00b4d8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.comentario-header {
+    grid-area: header;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.comentario-nombre {
+    font-weight: 700;
+    color: #023e8a;
+}
+
+.comentario-fecha {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.comentario-texto {
+    grid-area: body;
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-wrap;
+}
+
+
+#form_comentario {
+    background: #ffffff;
+    border: 1px solid #e3eef5;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+#form_comentario label {
+    display: inline-block;
+    margin: 8px 0 6px;
+    color: #023e8a;
+    font-weight: 600;
+}
+
+#form_comentario input[type="text"],
+#form_comentario input[type="email"],
+#form_comentario textarea {
+    width: min(700px, 100%);
+    border: 1.5px solid #cfe8f3;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    outline: none;
+    background: #fbfdff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#form_comentario textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.45;
+}
+
+#form_comentario input::placeholder,
+#form_comentario textarea::placeholder {
+    color: #9aa8b3;
+}
+
+#form_comentario input:focus,
+#form_comentario textarea:focus {
+    border-color: #0096c7;
+    box-shadow: 0 0 0 4px rgba(0,150,199,0.12);
+    background: #ffffff;
+}
+
+#form_comentario input:required:invalid,
+#form_comentario textarea:required:invalid {
+    border-color: #ffb3b3;
+}
+
+#form_comentario input:required:valid,
+#form_comentario textarea:required:valid {
+    border-color: #8bd3e6;
+}
+
+#btn_enviar_comentario {
+    margin-top: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+}
+
+.alert {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.alert-danger {
+    background: #ffe5e5;
+    border: 1px solid #ffb3b3;
+    color: #8a1f1f;
+}
+
+/* Utilidades */
+.muted {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    th, td {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    .btn-pagina {
+        margin: 8px 10px;
+        padding: 10px 18px;
+        font-size: 1rem;
+    }
+    #form_comentario input[type="text"],
+    #form_comentario input[type="email"],
+    #form_comentario textarea {
+        width: 100%;
+    }
+    .comentario-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+    }
+}
